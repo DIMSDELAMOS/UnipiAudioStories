@@ -1,0 +1,28 @@
+package com.example.unipiaudiostories;
+
+import java.io.Serializable;
+public class Story implements Serializable {   //ετσι μπορουμε να στελνουμε το αντικειμενο απο το ενα activity στο αλλο
+    int id;
+    String title;
+    String author;
+    String content;    //το κειμενο της ιστοριας
+    int imageResourceId;
+    int readCount;    //ποσες φορες διαβαστηκε
+
+    public Story(int id, String title, String author, String content, int imageResourceId, int readCount) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.content = content;
+        this.imageResourceId = imageResourceId;
+        this.readCount = readCount;
+    }
+
+    // Getters
+    public int getId() { return id; }
+    public String getTitle() { return title; }
+    public String getAuthor() { return author; }
+    public String getContent() { return content; }
+    public int getImageResourceId() { return imageResourceId; }
+    public int getReadCount() { return readCount; }
+}

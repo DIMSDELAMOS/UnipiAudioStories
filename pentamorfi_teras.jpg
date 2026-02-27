@@ -1,0 +1,50 @@
+package com.example.unipiaudiostories;
+
+import android.os.Bundle;
+import android.widget.TextView;
+import androidx.appcompat.app.AppCompatActivity;
+import java.util.List;
+
+public class StatisticsActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_statistics);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle(R.string.stats_title);
+        }
+        TextView txtStats = findViewById(R.id.txtStatsResult);
+        DatabaseHelper db = new DatabaseHelper(this);
+        List<Story> stories = db.getAllStories();
+        StringBuilder sb = new StringBuilder();
+        int totalReads = 0;
+        String favorite = "-";
+        int maxReads = -1;
+        for (Story s : stories) {
+            sb.append("• ").append(s.getTitle()).append(": ")
+                    .append(s.getReadCount()).append("\n");
+
+            totalReads += s.getReadCount();
+
+            if (s.getReadCount() > maxReads) {
+                maxReads = s.getReadCount();
+                favorite = s.getTitle();
+            }
+        }
+
+        String finalStats = getString(R.string.total_reads, totalReads) + "\n\n" + //ε,φανιση αποτελεσματων
+                getString(R.string.most_read) + " " + favorite + "\n\n" +
+                "------------------\n" +
+                sb.toString();
+
+        txtStats.setText(finalStats);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+}

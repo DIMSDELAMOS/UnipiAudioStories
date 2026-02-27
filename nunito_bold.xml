@@ -1,0 +1,93 @@
+package com.example.unipiaudiostories;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
+import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import java.util.Locale;
+
+public class StoryDetailActivity extends AppCompatActivity {
+
+    TextView txtTitle, txtContent;
+    ImageView imgStory;
+    Button btnRead, btnStop;
+    TextToSpeech tts;
+    Story currentStory;
+    DatabaseHelper dbHelper;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_story_detail);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Αναγνωση ιστοριας");
+        }
+
+        currentStory = (Story) getIntent().getSerializableExtra("story_data");
+        dbHelper = new DatabaseHelper(this);
+
+        txtTitle = findViewById(R.id.txtDetailTitle);
+        txtContent = findViewById(R.id.txtDetailContent);
+        imgStory = findViewById(R.id.imgDetail);
+        btnRead = findViewById(R.id.btnRead);
+        btnStop = findViewById(R.id.btnStop);
+
+        if (currentStory != null) {
+            txtTitle.setText(currentStory.getTitle());
+            txtContent.setText(currentStory.getContent());
+            imgStory.setImageResource(currentStory.getImageResourceId());
+        }
+
+        tts = new TextToSpeech(this, status -> {  //εδω ρυθμιζεται το text to speech
+            if (status == TextToSpeech.SUCCESS) {
+                Locale greekLocale = new Locale("el", "GR");
+                int result = tts.setLanguage(greekLocale);
+
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Intent installIntent = new Intent();
+                    installIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                    startActivity(installIntent);
+                }
+            }
+        });
+
+        btnRead.setOnClickListener(v -> {
+            if (currentStory != null) {
+                dbHelper.incrementReadCount(currentStory.getId());
+                Bundle params = new Bundle();  //ξεκιναει η ομιλια
+                params.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1.0f);   //max volume
+                tts.speak(currentStory.getContent(), TextToSpeech.QUEUE_FLUSH, params, null);
+
+                Toast.makeText(this, "Reading Started", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnStop.setOnClickListener(v -> {
+            if (tts != null) tts.stop();
+        });
+    }
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();     //οταν πατηθει το κουμπι,κλεινει το actibity που ξεκινησε και γυναρει πισω
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
+    }
+}
